@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Syne:wght@400;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0d0d1a;
+    min-height: 100vh;
+    font-family: 'Syne', sans-serif;
+    overflow: hidden;
+    cursor: none;
+  }
+
+  .cursor { position: fixed; pointer-events: none; z-index: 9999; font-size: 22px; transform: translate(-50%,-50%); transition: left 0.05s, top 0.05s; }
+
+  .stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .star { position: absolute; background: white; border-radius: 50%; animation: twinkle var(--d) ease-in-out infinite alternate; }
+  @keyframes twinkle { from { opacity: 0.1; } to { opacity: 0.8; } }
+
+  .bg-cats { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .bg-cat { position: absolute; font-size: 26px; opacity: 0.06; animation: floatUp var(--fd) linear infinite; bottom: -60px; left: var(--fl); animation-delay: var(--fdelay); }
+  @keyframes floatUp { 0% { transform: translateY(0); opacity:0.04; } 50% { opacity: 0.1; } 100% { transform: translateY(-110vh); opacity: 0; } }
+
+  .screen {
+    position: fixed; inset: 0; z-index: 10;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px 24px; gap: 28px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.6s ease;
+  }
+  .screen.active { opacity: 1; pointer-events: all; }
+
+  /* ---- SCREEN 1 ---- */
+  .s1-top { text-align: center; }
+  .s1-hey {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(22px, 5vw, 36px);
+    color: #f0c2f7;
+    letter-spacing: 3px;
+  }
+  .s1-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(60px, 16vw, 120px);
+    line-height: 1;
+    background: linear-gradient(120deg, #ff9de2, #ffcf77, #ff9de2);
+    background-size: 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 0%; } 100% { background-position: 200%; } }
+  .s1-gm {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(20px, 4.5vw, 32px);
+    color: #a0e8ff;
+    letter-spacing: 3px;
+    margin-top: 4px;
+  }
+
+  .confession-box {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 28px 36px;
+    max-width: 480px; width: 100%;
+    backdrop-filter: blur(12px);
+    text-align: center;
+  }
+  .confession-box .label {
+    font-family: 'Caveat', cursive;
+    font-size: 12px; color: #666;
+    letter-spacing: 4px; text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .confession-box .text {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(18px, 4vw, 24px);
+    color: #f0c2f7;
+    line-height: 1.7;
+  }
+  .confession-box .highlight { color: #ffcf77; font-weight: 700; }
+
+  /* ---- SCREENS 2 & 3 ---- */
+  .question-area { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .q-cat { font-size: 72px; animation: catBounce 1.2s ease-in-out infinite alternate; }
+  @keyframes catBounce { from { transform: translateY(0) rotate(-6deg); } to { transform: translateY(-16px) rotate(6deg); } }
+  .q-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(28px, 7vw, 56px); color: #fff; line-height: 1.2; }
+  .q-sub { font-family: 'Caveat', cursive; font-size: clamp(16px, 3.5vw, 22px); color: #ccc; line-height: 1.5; }
+
+  .answer-btns { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+  .ans-btn {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 50px;
+    padding: 14px 30px;
+    font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800;
+    color: #fff; cursor: pointer;
+    transition: all 0.25s;
+  }
+  .ans-btn.yes:hover { background: rgba(100,255,150,0.15); border-color: #a0ffb0; transform: translateY(-3px); }
+  .ans-btn.no:hover  { background: rgba(255,100,100,0.15); border-color: #ff9de2; transform: translateY(-3px); }
+
+  /* ---- SCREEN 4 ---- */
+  .response-area { text-align: center; max-width: 480px; }
+  .response-cat { font-size: 72px; display: block; margin-bottom: 16px; animation: catBounce 1s ease-in-out infinite alternate; }
+  .response-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(24px, 6vw, 42px); color: #ff9de2; margin-bottom: 12px; }
+  .response-msg { font-family: 'Caveat', cursive; font-size: clamp(18px, 4vw, 24px); color: #ddd; line-height: 1.6; }
+
+  .cat-parade { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .cat-parade span { font-size: 28px; animation: bounce var(--b) ease-in-out infinite alternate; animation-delay: var(--bd); display: inline-block; }
+  @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+
+  .next-btn {
+    background: linear-gradient(135deg, #ff9de2, #ffcf77);
+    border: none; border-radius: 50px;
+    padding: 16px 48px;
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 18px; color: #1a0030;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 6px 30px rgba(255, 157, 226, 0.35);
+  }
+  .next-btn:hover { transform: translateY(-4px) scale(1.04); box-shadow: 0 12px 40px rgba(255,157,226,0.45); }
+
+  canvas { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor">🐱</div>
+<canvas id="cc"></canvas>
+<div class="stars" id="stars"></div>
+<div class="bg-cats" id="bgCats"></div>
+
+<!-- SCREEN 1: Hey Manoj Good Morning + Confession -->
+<div class="screen active" id="s1">
+  <div class="s1-top">
+    <div class="s1-hey">Hey,</div>
+    <div class="s1-name">Manoj 🐾</div>
+    <div class="s1-gm">Good Morning ☀️</div>
+  </div>
+  <div class="confession-box">
+    <div class="label">// confession.txt</div>
+    <div class="text">
+      I was just <span class="highlight">practicing coding</span>… and then I thought, why not use my skills <span class="highlight">on you?</span> 🐱<br><br>
+      So here I am. Sending you this.<br>No reason. Just code things. 😶
+    </div>
+  </div>
+  <button class="next-btn" onclick="goTo(2)">Next 🐾</button>
+</div>
+
+<!-- SCREEN 2: Brush -->
+<div class="screen" id="s2">
+  <div class="question-area">
+    <div class="q-cat">🪥😺</div>
+    <div class="q-text">Did you brush,<br><span style="color:#ff9de2">pookie?</span></div>
+    <div class="q-sub">Your smile is too good to not take care of~</div>
+    <div class="answer-btns">
+      <button class="ans-btn yes" onclick="answer('brush','yes')">Yes 😇</button>
+      <button class="ans-btn no"  onclick="answer('brush','no')">Not yet 😬</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 3: Eat -->
+<div class="screen" id="s3">
+  <div class="question-area">
+    <div class="q-cat">🍱😸</div>
+    <div class="q-text">Did you eat,<br><span style="color:#ffcf77">pookie?</span></div>
+    <div class="q-sub">A hungry Manoj is a crime against humanity 🥺</div>
+    <div class="answer-btns">
+      <button class="ans-btn yes" onclick="answer('eat','yes')">Yes 😋</button>
+      <button class="ans-btn no"  onclick="answer('eat','no')">Not yet 😅</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 4: Final -->
+<div class="screen" id="s4">
+  <div class="response-area" id="finalArea"></div>
+  <div class="cat-parade" id="parade"></div>
+</div>
+
+<script>
+const cur = document.getElementById('cursor');
+document.addEventListener('mousemove', e => { cur.style.left = e.clientX+'px'; cur.style.top = e.clientY+'px'; });
+
+// Stars
+const st = document.getElementById('stars');
+for(let i=0;i<100;i++){
+  const s=document.createElement('div'); s.className='star';
+  const sz=Math.random()*2.5+0.5;
+  s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${1.5+Math.random()*3}s;animation-delay:${Math.random()*3}s`;
+  st.appendChild(s);
+}
+
+// BG cats
+const bg=document.getElementById('bgCats');
+const ems=['🐱','🐈','😺','😸','😻','🐾'];
+for(let i=0;i<16;i++){
+  const c=document.createElement('div'); c.className='bg-cat';
+  c.textContent=ems[Math.floor(Math.random()*ems.length)];
+  c.style.cssText=`--fl:${Math.random()*100}%;--fd:${9+Math.random()*12}s;--fdelay:${Math.random()*10}s`;
+  bg.appendChild(c);
+}
+
+// Cat parade
+const parade=document.getElementById('parade');
+['🐱','😺','😸','😹','😻','🙀','😼','😽','🐾','💕','✨','🌸'].forEach((e,i)=>{
+  const sp=document.createElement('span'); sp.textContent=e;
+  sp.style.cssText=`--b:${0.7+Math.random()*0.8}s;--bd:${i*0.1}s`;
+  parade.appendChild(sp);
+});
+
+let state = { brush: null, eat: null };
+let current = 1;
+
+function goTo(n) {
+  document.getElementById('s'+current).classList.remove('active');
+  current = n;
+  document.getElementById('s'+n).classList.add('active');
+}
+
+function answer(type, val) {
+  state[type] = val;
+  if (type === 'brush') {
+    goTo(3);
+  } else {
+    buildFinal();
+    goTo(4);
+    confetti();
+  }
+}
+
+function buildFinal() {
+  const b = state.brush, e = state.eat;
+  let cat, title, msg;
+  if (b==='yes' && e==='yes') {
+    cat='😻'; title='Perfect pookie!';
+    msg='Brushed AND fed? You are literally winning at life today. I am so proud 🥺💕 Now go be amazing, Manoj!';
+  } else if (b==='yes' && e==='no') {
+    cat='😾'; title='Almost there!';
+    msg='Okay brushing = respect. But please go eat something!! A hungry Manoj is NOT acceptable 🍜 Go now. I will wait. 🐾';
+  } else if (b==='no' && e==='yes') {
+    cat='🙀'; title='Pookie!!';
+    msg='You ATE but did not brush?? In that order?? Okay first go brush RIGHT NOW. I will still be here when you come back 🪥😤';
+  } else {
+    cat='😹'; title='MANOJ.';
+    msg='Neither?? 😭 This is the reason I built this whole website okay. Please brush AND eat. I coded this with love, don\'t waste it 🐾💕';
+  }
+  document.getElementById('finalArea').innerHTML = `
+    <span class="response-cat">${cat}</span>
+    <div class="response-title">${title}</div>
+    <div class="response-msg">${msg}</div>
+  `;
+}
+
+// Confetti
+const canvas=document.getElementById('cc'), ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+window.addEventListener('resize',()=>{ canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
+let parts=[];
+function confetti(){
+  parts=[];
+  const cols=['#ff9de2','#ffcf77','#a0e8ff','#c3f0ca','#f0c2f7'];
+  for(let i=0;i<150;i++) parts.push({x:Math.random()*canvas.width,y:-10,vx:(Math.random()-.5)*5,vy:2+Math.random()*5,color:cols[Math.floor(Math.random()*cols.length)],size:6+Math.random()*8,rot:Math.random()*360,rv:(Math.random()-.5)*6,life:1});
+  animC();
+}
+function animC(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  parts=parts.filter(p=>p.life>0&&p.y<canvas.height+20);
+  if(!parts.length)return;
+  parts.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;p.rot+=p.rv;p.life-=0.007;
+    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);
+    ctx.globalAlpha=p.life;ctx.fillStyle=p.color;
+    ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*.5);
+    ctx.restore();
+  });
+  requestAnimationFrame(animC);
+}
+</script>
+</body>
+</html>
